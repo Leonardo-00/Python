@@ -1,0 +1,75 @@
+import os
+
+
+class Variable:
+    
+    def __init__(self, domain, assignment = None):
+        if assignment == None:
+            self.domain = domain
+        else:
+            self.domain = [assignment]
+        self.assignment = assignment
+    
+    
+            
+        
+
+class CSP:
+    
+    def __init__(self, vars, domains, costraints, initial_assignment):
+        
+        self.vars = vars
+        self.domains = domains
+        self.costraints = costraints
+        for assignment in initial_assignment:
+            self.vars[assignment.x][assignment.y] = assignment.value
+        self.ac3()
+        
+    def ac3():
+        pass
+        
+
+
+
+
+
+variables = []
+N = 9
+i = 0
+
+file_path = os.path.join(os.path.dirname(__file__), 'input.txt')
+file = open(file_path, "r")
+
+for i in range(N):
+    l = list(file.readline())
+    if l.__contains__("\n"):
+        l.remove("\n")
+    print(len(l))
+    for j in range(N):
+        n = l[j]
+        if n == "_":
+            variables.append(Variable([x for x in range(1, N+1)]))
+        else:
+            variables.append(Variable([x for x in range(1, N+1)], n))
+
+#Costraints
+def different(x, y):
+    return x != y
+costraints = []
+for i in range(N):
+    for j in range(N):
+        if i != j:
+            costraints.append((i,j))
+            costraints.append((j,i))
+for i in range(3):
+    for j in range(3):
+        tiles = [(a,b) for a in range(3) for b in range(3)]
+        for t1 in tiles:
+            for t2 in tiles:
+                if t1 != t2:
+                    costraints.append((3*i))
+    
+
+
+        
+
