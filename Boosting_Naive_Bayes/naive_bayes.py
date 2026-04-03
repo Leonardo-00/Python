@@ -96,7 +96,8 @@ class WeightedCategoricalNB:
         # Cardinalità per feature (usata nello smoothing)
         # calcola per ciascuna feature j il numero di valori distinti osservati in training
         for j in range(n_features):
-            self.feature_cardinality_[j] = len(np.unique(X[:, j]))
+            col = X[:, j]
+            self.feature_cardinality_[j] = len(np.unique(col[~np.isnan(col)]))
 
         # Somma pesata totale dei campioni, usata nei calcoli di prior e fallback.
         total_w = sample_weight.sum()
@@ -119,8 +120,9 @@ class WeightedCategoricalNB:
 
             for j in range(n_features):
                 
-                # vals_j: valori distinti osservati della feature j nel training
-                vals_j = np.unique(X[:, j])
+                # vals_j: valori distinti NON-NaN osservati della feature j
+                all_vals = X[:, j]
+                vals_j = np.unique(all_vals[~np.isnan(all_vals)])
                 
                 # Vj: cardinalita della feature j, usata nello smoothing
                 Vj = self.feature_cardinality_[j]
@@ -159,6 +161,8 @@ class WeightedCategoricalNB:
         """
         s = self.class_log_prior_[c]
         for j, v in enumerate(x):
+            if np.isnan(v):
+                continue
             key = (j, v)
             if key in self.log_likelihood_[c]:
                 s += self.log_likelihood_[c][key]
@@ -168,6 +172,17 @@ class WeightedCategoricalNB:
                 denom = self.class_weight_sum_[c] + self.alpha * Vj
                 s += np.log(self.alpha / denom)
         return s
+
+    def predict_proba(self, X):
+        """Ritorna P(C=classe_positiva|x) per ogni esempio."""
+        X = np.asarray(X)
+        probas = np.zeros(X.shape[0])
+        for i, x in enumerate(X):
+            log_scores = {c: self._log_prob_class(x, c) for c in self.classes_}
+            max_log = max(log_scores.values())
+            log_denom = max_log + np.log(sum(np.exp(s - max_log) for s in log_scores.values()))
+            probas[i] = np.exp(log_scores[self.classes_[-1]] - log_denom)
+        return probas
 
     def predict(self, X):
         """Predice la classe con score massimo per ciascun esempio.
