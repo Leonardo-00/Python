@@ -27,13 +27,13 @@ def sample_elkan_scenario(X_nan, y, scenario="mixed"):
     
     # Split 200 completi
     X_c_train, X_c_test, y_c_train, y_c_test = train_test_split(
-        X_comp, y_comp, train_size=200, random_state=42
+        X_comp, y_comp, train_size=200, random_state=2
     )
     
     if scenario == "mixed":
         # Aggiunta 100 incompleti
         X_i_train, X_i_test, y_i_train, y_i_test = train_test_split(
-            X_inc, y_inc, train_size=100, random_state=42
+            X_inc, y_inc, train_size=100, random_state=2
         )
         X_train = np.vstack((X_c_train, X_i_train))
         y_train = np.concatenate((y_c_train, y_i_train))
